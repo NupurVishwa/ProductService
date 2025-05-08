@@ -1,8 +1,10 @@
 package com.example.capstoneproject.controllers;
 import com.example.capstoneproject.dtos.CreateFakeStoreProductDto;
 import com.example.capstoneproject.dtos.ProductResponseDto;
+import com.example.capstoneproject.dtos.ProductWithoutDescDTO;
 import com.example.capstoneproject.exceptions.ProductNotFoundException;
 import com.example.capstoneproject.models.Product;
+import com.example.capstoneproject.service.ProductAIService;
 import com.example.capstoneproject.service.ProductService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
@@ -14,12 +16,13 @@ import java.util.List;
 
 @RestController
 public class ProductController {
-
+private final ProductAIService productAIService;
     ProductService productService;
 
     public ProductController(@Qualifier("ProductDBService")
-                             ProductService productService) {
+                             ProductService productService,ProductAIService productAIService ) {
         this.productService = productService;
+        this.productAIService = productAIService;
     }
 
     @GetMapping("/products/{id}")
@@ -63,6 +66,16 @@ public class ProductController {
         ProductResponseDto productResponseDto = ProductResponseDto.from(product);
 
         return productResponseDto;
+    }
+
+    public ProductResponseDto CreateProductDescriptionWithAI(@RequestBody ProductWithoutDescDTO productWithoutDescDTO){
+        Product product = productAIService.CreateProductWithAIDesc(
+                productWithoutDescDTO.getName(),
+                productWithoutDescDTO.getPrice(),
+                productWithoutDescDTO.getImageURL(),
+                productWithoutDescDTO.getCategory()
+        );
+        return ProductResponseDto.from(product);
     }
 
 //    @ExceptionHandler(NullPointerException.class)
